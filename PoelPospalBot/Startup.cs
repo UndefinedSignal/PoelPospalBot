@@ -1,24 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PoelPospalBot.Services;
 
 namespace PoelPospalBot
 {
-    class Startup
+    public class Startup
     {
         public IConfigurationRoot Configuration { get; }
 
         public Startup(string[] args)
         {
             var builder = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory).AddJsonFile("_config.json");
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("_config.json");
             Configuration = builder.Build();
         }
 
@@ -34,8 +33,10 @@ namespace PoelPospalBot
             ConfigureServices(services);
 
             var provider = services.BuildServiceProvider();
+            provider.GetRequiredService<CommandsHandler>();
+            provider.GetRequiredService<LoggingService>();
 
-            //await provider.GetRequiredService<StartupService>().StartAsync(); TODO
+            await provider.GetRequiredService<StartupService>().StartAsync();
             await Task.Delay(-1);
         }
 
@@ -50,7 +51,11 @@ namespace PoelPospalBot
                 {
                     LogLevel = LogSeverity.Verbose,
                     DefaultRunMode = RunMode.Async,
-                }));
+                }))
+                .AddSingleton<CommandsHandler>()
+                .AddSingleton<StartupService>()
+                .AddSingleton<LoggingService>()
+                .AddSingleton(Configuration);
         }
     }
 }
