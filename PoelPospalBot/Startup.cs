@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -17,7 +18,14 @@ namespace PoelPospalBot
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("_config.json");
+                .Add<WritableJsonConfigurationSource>((Action<WritableJsonConfigurationSource>)(s =>
+                {
+                    s.FileProvider = null;
+                    s.Path = "_config.json";
+                    s.Optional = false;
+                    s.ReloadOnChange = true;
+                    s.ResolveFileProvider();
+                }));
             Configuration = builder.Build();
         }
 
@@ -35,8 +43,10 @@ namespace PoelPospalBot
             var provider = services.BuildServiceProvider();
             provider.GetRequiredService<CommandsHandler>();
             provider.GetRequiredService<LoggingService>();
+            provider.GetRequiredService<UserIntendService>();
 
             await provider.GetRequiredService<StartupService>().StartAsync();
+
             await Task.Delay(-1);
         }
 
@@ -44,8 +54,10 @@ namespace PoelPospalBot
         {
             services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
             {
+                AlwaysDownloadUsers = true,
                 LogLevel = LogSeverity.Verbose,
-                MessageCacheSize = 1000
+                MessageCacheSize = 2000,
+                GatewayIntents = GatewayIntents.All
             }))
                 .AddSingleton(new CommandService(new CommandServiceConfig
                 {
@@ -55,6 +67,7 @@ namespace PoelPospalBot
                 .AddSingleton<CommandsHandler>()
                 .AddSingleton<StartupService>()
                 .AddSingleton<LoggingService>()
+                .AddSingleton<UserIntendService>()
                 .AddSingleton(Configuration);
         }
     }
