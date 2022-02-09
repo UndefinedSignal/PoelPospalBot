@@ -15,18 +15,25 @@ namespace PoelPospalBot.Modules
         public async Task PepeAsync()
         {
             var filename = GetRandomFile(@"..\..\..\Pepe", new string[] { ".png", ".jpg" });
-            var builder = new EmbedBuilder()
-            {
-                ImageUrl = $"attachment://{filename}"
-            };
+            var builder = new EmbedBuilder();
+            builder.WithDescription("Poel&Pospal Inc.");
+            builder.WithImageUrl($"attachment://{filename}");
             await Context.Channel.SendFileAsync(filename, embed: builder.Build());
         }
 
-        public async Task PepeEmptyMsgAsync(SocketCommandContext context)
+        public async Task PepeErrorMsgAsync(SocketCommandContext context, string error)
         {
             var filename = GetRandomFile(@"..\..\..\Pepe", new string[] { ".png", ".jpg" });
             var builder = new EmbedBuilder()
             {
+                Author = null,
+                Color = null,
+                Description = error,
+                Footer = null,
+                ThumbnailUrl = null,
+                Timestamp = null,
+                Title = null,
+                Url = null,
                 ImageUrl = $"attachment://{filename}"
             };
             await context.Channel.SendFileAsync(filename, embed: builder.Build());

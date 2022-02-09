@@ -41,19 +41,15 @@ namespace PoelPospalBot.Services
             }
             var context = new SocketCommandContext(_discord, msg);
             int argPos = 0;
+
+            await new Emoji().SetEmojiAsync(context); // React with emotion on every message
+
             if (msg.HasStringPrefix(_config["Discord:Prefix"], ref argPos) || msg.HasMentionPrefix(_discord.CurrentUser, ref argPos))
             {
                 var result = await _commands.ExecuteAsync(context, argPos, _provider);
                 if (!result.IsSuccess)
                 {
-                    if(result.Error.Value.Equals(CommandError.UnknownCommand))
-                    {
-                        await new PepeModule().PepeEmptyMsgAsync(context);
-                    }
-                    else
-                    {
-                        await context.Channel.SendMessageAsync(result.ToString());
-                    }
+                    await new PepeModule().PepeErrorMsgAsync(context, result.ToString());
                 }
             }
         }
