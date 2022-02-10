@@ -12,12 +12,14 @@ namespace PoelPospalBot.Modules
     public class PepeModule : ModuleBase<SocketCommandContext>
     {
         [Command("Пепе"), Alias("P")]
+        [Summary("У меня есть 96 Пепе и дам тебе одного из них")]
         public async Task PepeAsync()
         {
             var filename = GetRandomFile(@"..\..\..\Pepe", new string[] { ".png", ".jpg" });
             var builder = new EmbedBuilder();
             builder.WithDescription("Poel&Pospal Inc.");
             builder.WithImageUrl($"attachment://{filename}");
+            await Context.Message.DeleteAsync();
             await Context.Channel.SendFileAsync(filename, embed: builder.Build());
         }
 
