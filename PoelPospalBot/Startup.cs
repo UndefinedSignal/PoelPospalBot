@@ -43,7 +43,7 @@ namespace PoelPospalBot
             var provider = services.BuildServiceProvider();
             provider.GetRequiredService<CommandsHandler>();
             provider.GetRequiredService<LoggingService>();
-            provider.GetRequiredService<UserIntendService>();
+            provider.GetRequiredService<TemporaryLoopService>();
 
             await provider.GetRequiredService<StartupService>().StartAsync();
 
@@ -67,7 +67,7 @@ namespace PoelPospalBot
                 .AddSingleton<CommandsHandler>()
                 .AddSingleton<StartupService>()
                 .AddSingleton<LoggingService>()
-                .AddSingleton<UserIntendService>()
+                .AddSingleton<TemporaryLoopService>()
                 .AddSingleton(Configuration);
         }
     }

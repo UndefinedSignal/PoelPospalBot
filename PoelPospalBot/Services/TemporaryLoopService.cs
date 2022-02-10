@@ -9,79 +9,81 @@ using Microsoft.Extensions.Configuration;
 
 namespace PoelPospalBot.Services
 {
-    public class UserIntendService
+    public class TemporaryLoopService
     {
         private readonly DiscordSocketClient _discord;
         private readonly IConfigurationRoot _config;
-        private Timer SheduleUpdateTimer;
+        private Timer _loopTimer;
 
-        public UserIntendService(
+        public TemporaryLoopService(
             DiscordSocketClient discord,
             IConfigurationRoot config)
         {
             _discord = discord;
             _config = config;
 
-            _discord.Ready += OncePerDayOnRestart;
-
-            //SheduleUpdateTimer = new System.Timers.Timer(50); //calculate six hours in milliseconds
-            //SheduleUpdateTimer.Elapsed += new ElapsedEventHandler(Check);
-            //SheduleUpdateTimer.Start();
+            InitializeLoop();
         }
 
-        private void Check(object sender, ElapsedEventArgs e)
+        private void InitializeLoop()
         {
-            try
+            _loopTimer = new Timer(TimeSpan.FromSeconds(60).TotalMilliseconds)
             {
-                Console.WriteLine("I'll just check myself!");
-                OncePerDayOnRestart();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Check exception: {ex.Message}");
-            }
+                AutoReset = true,
+                Enabled = true
+            };
+            _loopTimer.Elapsed += _timer_ElapsedAsync;
+            _loopTimer.Start();
+
         }
 
-        private async Task OncePerDayOnRestart()
+        private async void _timer_ElapsedAsync(object sender, ElapsedEventArgs e)
         {
-            var unixTimestamp = (ulong) DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-
+            var unixTimestamp = (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
             if (_config["Herotimer"] == null || _config["Herotimer"] == "")
             {
                 _config.GetSection("Herotimer").Value = "0";
             }
-            var nextDayUnixTimeStamp = ulong.Parse(_config["Herotimer"]) + 76400;
-            if (nextDayUnixTimeStamp <= unixTimestamp)
+            var nextDayUnixTimeStamp = ulong.Parse(_config["Herotimer"]) + 76400; //76400;
+            if (nextDayUnixTimeStamp >= unixTimestamp)
             {
-                Console.WriteLine("It's hero time!");
-            }
-            else
-            {
-                Console.WriteLine("One hero per day!");
                 return;
             }
 
             ulong guildID = Convert.ToUInt64(_config["Guild:id"]);
             var guild = _discord.GetGuild(guildID);
 
+            var rolename = _config["HeroOfTheDayRoleName"];
+
             ulong channelId = Convert.ToUInt64(_config["Guild:channel"]);
             var channel = _discord.GetChannel(channelId) as IMessageChannel;
 
-            //await channel.SendMessageAsync("I'm alive.");
             await guild.DownloadUsersAsync();
 
+            var role = guild.Roles.FirstOrDefault(x => x.Name.ToString() == rolename);
             var takeUser = guild.Users.ElementAt((new Random().Next(1, guild.Users.Count)));
+
+            foreach (var user in guild.Users)
+            {
+                if (user.Roles.FirstOrDefault(x => x.Name.ToString() == rolename) != null)
+                {
+                    Console.WriteLine($"У {user.Nickname} была роль. Теперь нет.");
+                    await user.RemoveRoleAsync(role);
+                }
+            }
+
             var builder = new EmbedBuilder()
             {
                 Title = "У нас новый герой!",
                 Color = Color.Red,
-                Description = $"{takeUser.Mention} ты был избран!",
+                Description = $"{takeUser.Nickname} ты избираешься на почётную роль! {role.Mention}",
             };
             builder.WithThumbnailUrl(takeUser.GetAvatarUrl());
             builder.WithCurrentTimestamp();
 
             _config.GetSection("Herotimer").Value = unixTimestamp.ToString();
 
+            await takeUser.AddRoleAsync(role);
             await channel.SendMessageAsync(null, false, builder.Build());
         }
     }
