@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using System;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,11 +17,12 @@ namespace PoelPospalBot.Modules
         public async Task PepeAsync()
         {
             var filename = GetRandomFile(@"..\..\..\Pepe", new string[] { ".png", ".jpg" });
-            var builder = new EmbedBuilder();
-            builder.WithDescription("Poel&Pospal Inc.");
-            builder.WithImageUrl($"attachment://{filename}");
+            //var builder = new EmbedBuilder();
+            //builder.WithDescription("Poel&Pospal Inc.");
+            //builder.WithImageUrl($"attachment://{filename}");
             await Context.Message.DeleteAsync();
-            await Context.Channel.SendFileAsync(filename, embed: builder.Build());
+            //await Context.Channel.SendFileAsync(filename, embed: builder.Build());
+            await Context.Channel.SendFileAsync(filename);
         }
 
         public async Task PepeErrorMsgAsync(SocketCommandContext context, string error)
@@ -53,7 +55,7 @@ namespace PoelPospalBot.Modules
                     Random rand = new Random();
                     filePath = rgFiles.ElementAt(rand.Next(0, rgFiles.Count())).FullName;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     throw new Exception($"File not found {ex}");
                 }
