@@ -85,7 +85,7 @@ namespace PoelPospalBot.Modules
         public async Task UserInfo()
         {
 
-            await ReplyAsync($"Не реализовано, чё пыришься {Context.User.Mention} пидор?)"); ;
+            await ReplyAsync($"Не реализовано, чё пыришься {Context.User.Mention}?)"); ;
         }
 
 

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace PoelPospalBot.Modules
 {
     [Name("Разное для веселья")]
-    class FunModule : ModuleBase<SocketCommandContext>
+    public class FunModule : ModuleBase<SocketCommandContext>
     {
         private CommandService _service;
         private IConfigurationRoot _config;

@@ -10,16 +10,16 @@ namespace PoelPospalBot.Modules
     public class HelloModule : ModuleBase<SocketCommandContext>
     {
         [Command("привет")]
-        public async Task Say()
+        public async Task Say([Remainder] string str)
         {
             await Context.Message.DeleteAsync();
-            await ReplyAsync($"{MentionUtils.MentionUser(Context.User.Id)} ПРИВЕТ ДРУЖИЩЕ!");
-        }
 
-        [Command("привет")]
-        public async Task Say(string str)
-        {
-            await ReplyAsync($"{MentionUtils.MentionUser(Context.User.Id)} ПРИВЕТ ДРУЖИЩЕ! «{str}» Это так на тебя похоже!");
+            if(str != "")
+            {
+                await ReplyAsync($"{MentionUtils.MentionUser(Context.User.Id)} ПРИВЕТ ДРУЖИЩЕ! «{str}» Это так на тебя похоже!");
+                return;
+            }
+            await ReplyAsync($"{MentionUtils.MentionUser(Context.User.Id)} ПРИВЕТ ДРУЖИЩЕ!");
         }
     }
 }
