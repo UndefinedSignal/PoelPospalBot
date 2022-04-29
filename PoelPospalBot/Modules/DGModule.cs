@@ -13,13 +13,13 @@ namespace PoelPospalBot.Modules
     [RequireContext(ContextType.Guild)]
     public class DGModule : ModuleBase<SocketCommandContext>
     {
-        private CommandService _service;
+        private CommandService _commands;
         private IConfigurationRoot _config;
         private IAudioService _audioService;
 
-        public DGModule(CommandService service, IConfigurationRoot config, IAudioService audioService)
+        public DGModule(CommandService commands, IConfigurationRoot config, IAudioService audioService)
         {
-            _service = service;
+            _commands = commands;
             _config = config;
             _audioService = audioService ?? throw new ArgumentNullException(nameof(audioService));
         }
@@ -99,7 +99,7 @@ namespace PoelPospalBot.Modules
                 return;
             }
 
-            await ReplyAsync($"Position: {player.TrackPosition} / {player.CurrentTrack.Duration}.");
+            await ReplyAsync($"Position: {player.Position} / {player.CurrentTrack.Duration}.");
         }
 
         /// <summary>

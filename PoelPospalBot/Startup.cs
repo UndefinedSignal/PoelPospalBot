@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Lavalink4NET.Logging;
 using Lavalink4NET.MemoryCache;
@@ -22,7 +23,7 @@ namespace PoelPospalBot
                 .Add<WritableJsonConfigurationSource>((Action<WritableJsonConfigurationSource>)(s =>
                 {
                     s.FileProvider = null;
-                    s.Path = "_config.json";
+                    s.Path = "Config/_config.json";
                     s.Optional = false;
                     s.ReloadOnChange = true;
                     s.ResolveFileProvider();
@@ -45,6 +46,7 @@ namespace PoelPospalBot
             provider.GetRequiredService<CommandsHandler>();
             provider.GetRequiredService<LoggingService>();
             provider.GetRequiredService<TemporaryLoopService>();
+            provider.GetRequiredService<WelcomeService>();
             provider.GetRequiredService<Lavalink4NET.IAudioService>();
             provider.GetRequiredService<ILogger>();
 
@@ -65,12 +67,14 @@ namespace PoelPospalBot
             .AddSingleton(new CommandService(new CommandServiceConfig
             {
                 LogLevel = LogSeverity.Verbose,
-                DefaultRunMode = RunMode.Async,
+                DefaultRunMode = Discord.Commands.RunMode.Async,
             }))
+            .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
             .AddSingleton<CommandsHandler>()
             .AddSingleton<StartupService>()
             .AddSingleton<LoggingService>()
             .AddSingleton<TemporaryLoopService>()
+            .AddSingleton<WelcomeService>()
             .AddSingleton<Lavalink4NET.IAudioService, Lavalink4NET.LavalinkNode>()
             .AddSingleton<Lavalink4NET.IDiscordClientWrapper, Lavalink4NET.DiscordNet.DiscordClientWrapper>()
             .AddSingleton<ILogger, EventLogger>()
