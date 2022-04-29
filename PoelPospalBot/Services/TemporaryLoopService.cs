@@ -32,6 +32,7 @@ namespace PoelPospalBot.Services
                 AutoReset = true,
                 Enabled = true
             };
+
             _loopTimer.Elapsed += _timer_ElapsedAsync;
             _loopTimer.Start();
 
@@ -44,7 +45,7 @@ namespace PoelPospalBot.Services
             {
                 _config.GetSection("Herotimer").Value = "0";
             }
-            var nextDayUnixTimeStamp = ulong.Parse(_config["Herotimer"]) + 76400; //76400;
+            var nextDayUnixTimeStamp = ulong.Parse(_config["Herotimer"]) + 75400; //76400;
             if (nextDayUnixTimeStamp >= unixTimestamp)
             {
                 return;
@@ -53,19 +54,22 @@ namespace PoelPospalBot.Services
             ulong guildID = Convert.ToUInt64(_config["Guild:id"]);
             var guild = _discord.GetGuild(guildID);
 
-            var rolename = _config["HeroOfTheDayRoleName"];
+            await guild.DownloadUsersAsync();
+
+            ulong roleID = Convert.ToUInt64(_config["HeroOfTheDayRoleID"]);
 
             ulong channelId = Convert.ToUInt64(_config["Guild:channel"]);
             var channel = _discord.GetChannel(channelId) as IMessageChannel;
 
-            await guild.DownloadUsersAsync();
+            var role = guild.Roles.FirstOrDefault(x => x.Id == roleID);
 
-            var role = guild.Roles.FirstOrDefault(x => x.Name.ToString() == rolename);
-            var takeUser = guild.Users.ElementAt((new Random().Next(1, guild.Users.Count)));
+            var takeUser = GetRandomUserFromGuild(guild);
+
+            Console.WriteLine($"Выбираем героя! Общее количество юзеров {guild.Users.Count} из них мы выбрали {takeUser.Nickname}");
 
             foreach (var user in guild.Users)
             {
-                if (user.Roles.FirstOrDefault(x => x.Name.ToString() == rolename) != null)
+                if (user.Roles.Contains(role))
                 {
                     Console.WriteLine($"У {user.Nickname} была роль. Теперь нет.");
                     await user.RemoveRoleAsync(role);
@@ -76,7 +80,7 @@ namespace PoelPospalBot.Services
             {
                 Title = "У нас новый герой!",
                 Color = Color.Red,
-                Description = $"{takeUser.Nickname} ты избираешься на почётную роль! {role.Mention}",
+                Description = $"{takeUser.Mention} ты избираешься на почётную роль! {role.Mention}",
             };
             builder.WithThumbnailUrl(takeUser.GetAvatarUrl());
             builder.WithCurrentTimestamp();
@@ -85,6 +89,16 @@ namespace PoelPospalBot.Services
 
             await takeUser.AddRoleAsync(role);
             await channel.SendMessageAsync(null, false, builder.Build());
+        }
+
+        private SocketGuildUser GetRandomUserFromGuild(SocketGuild guild)
+        {
+            var user = guild.Users.ElementAt((new Random().Next(1, guild.Users.Count)));
+            if(user.IsBot)
+            {
+                return GetRandomUserFromGuild(guild);
+            }
+            return user;
         }
     }
 }

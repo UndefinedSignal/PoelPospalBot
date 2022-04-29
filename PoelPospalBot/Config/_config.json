@@ -1,0 +1,15 @@
+{
+  "Discord": {
+    "Token": "yourToken",
+    "Prefix": "&"
+  },
+  "Guild": {
+    "id": "637904093209427988",
+    "channel": "812960989086613524"
+  },
+  "Herotimer": "",
+  "HeroOfTheDayRoleID": "941303910528872490",
+  "HookChannels": {
+    "channelname": "webhookurl"
+  }
+}
